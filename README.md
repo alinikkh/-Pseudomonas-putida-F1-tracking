@@ -61,6 +61,9 @@ The code can generate clear visual outputs:
 - **Color-coded straightness** – highlights directional motion  
 - **Movies** – animations of bacterial motion under different conditions  
 
+<img width="3020" height="1457" alt="runtimedistribution" src="https://github.com/user-attachments/assets/d2aaa30b-762b-44c4-8196-27cfbb00e7ec" />
+
+
 **Example outputs:**     
 - **Movie S4–S5:** Run trajectories under uniform and gradient conditions, experimental and simulated  
 ---
