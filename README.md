@@ -42,6 +42,6 @@ Users can modify the tumble detection parameters if the experimental setup or ba
 Output includes processed trajectories and a summary of run/tumble statistics.
 
 Citation
-
+    
 If you use this code for your research, please cite:
 Doan et al., “Stabilizing by steering: Enhancing bacterial motility by non-uniform diffusiophoresis,” Supporting Information.
