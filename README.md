@@ -61,18 +61,14 @@ The code can generate clear visual outputs:
 - **Color-coded straightness** – highlights directional motion  
 - **Movies** – animations of bacterial motion under different conditions  
 
-**Example outputs:**  
-- **Movie S1:** Cells entering a narrow pore under uniform salt concentration  
-- **Movie S2:** Cells entering a narrow pore under a salt gradient  
-- **Movie S3–S6:** Run trajectories under uniform and gradient conditions, experimental and simulated  
-- **Movie S7–S8:** Motion toward a toluene source, with and without diffusiophoretic effects  
-
+**Example outputs:**     
+- **Movie S4–S5:** Run trajectories under uniform and gradient conditions, experimental and simulated  
 ---
 
 ## 📝 Notes
 
-- Tested with **MATLAB R2020b** or later  
-- Tumble detection parameters can be modified for different experimental setups  
+- Tested with **MATLAB R2024b**   
+- Tumble detection parameters can be modified for different experimental setups and bacteria  
 - Output includes processed trajectories, run/tumble events, and visualizations  
 
 ---
@@ -86,7 +82,7 @@ If you use this code in your research, please cite our paper:
 
 ## ⚙️ Requirements
 
-- MATLAB R2020b or later  
+- MATLAB R2024b or later  
 - MATLAB toolboxes:  
   - `Statistics and Machine Learning Toolbox` (optional for advanced analysis)  
   - `Image Processing Toolbox like Image J` (if working with videos)  
