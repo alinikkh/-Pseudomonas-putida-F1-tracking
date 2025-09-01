@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![GitHub Repo Size](https://img.shields.io/github/repo-size/yourusername/Pseudomonas-putida-F1-Tracking)](https://github.com/yourusername/Pseudomonas-putida-F1-Tracking)
 
-This repository contains the **MATLAB code** for analyzing the motility of *Pseudomonas putida* F1 cells. The code detects bacterial **runs and tumbles** from experimental trajectories and enables quantitative analysis of bacterial motion under various experimental conditions.
+This repository contains the **MATLAB code** and **Python code** for analyzing the motility of *Pseudomonas putida* cells and all other bacterial cells. The code detects bacterial **runs and tumbles** from experimental trajectories and enables quantitative analysis of bacterial motion under various experimental conditions. 
 ## 📚 Update
 - ▶ This repository will be moved and maintained under the Complex Fluid Lab: [https://www.sangwooshin.com/](https://www.sangwooshin.com/)
 - ▶ A Python version of the code was developed and will be added soon.
@@ -43,8 +43,8 @@ The code requires an **Excel file** with **three columns**:
 
 ## 🔍 Tumble Detection
 
-- Based on criteria described in our paper  
-- Parameters can be **adjusted** and **visually verified** for each dataset  
+- Based on the criteria described in our paper  
+- Parameters can be **adjusted** and **visually verified**   
 - Ensures accurate detection of bacterial runs and tumbles  
 
 ---
