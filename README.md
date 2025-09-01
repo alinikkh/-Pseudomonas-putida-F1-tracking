@@ -1,47 +1,93 @@
 # Pseudomonas-putida-F1-tracking
-Pseudomonas-putida-F1-Tracking
+# 🦠 Pseudomonas-putida-F1-Tracking
 
-This repository contains the tracking code for analyzing the motility of Pseudomonas putida F1 cells. The code is designed to process experimental trajectories and detect bacterial runs and tumbles, facilitating quantitative analysis of bacterial motion under various experimental conditions.
+[![MATLAB](https://img.shields.io/badge/MATLAB-R2020b-blue)](https://www.mathworks.com/products/matlab.html)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/yourusername/Pseudomonas-putida-F1-Tracking)](https://github.com/yourusername/Pseudomonas-putida-F1-Tracking)
 
-Input Requirements
+This repository contains the **MATLAB code** for analyzing the motility of *Pseudomonas putida* F1 cells. The code detects bacterial **runs and tumbles** from experimental trajectories and enables quantitative analysis of bacterial motion under various experimental conditions.
 
-The code requires an Excel file with three columns:
+---
 
-Frame number – the sequential frame index from your recorded video.
+## ⚡ Features
 
-X-position – horizontal position of the cell in pixels.
+- ✅ Analyze bacterial trajectories from microscopy videos  
+- ✅ Detect runs and tumbles with adjustable criteria  
+- ✅ Convert pixel coordinates to physical units using microscope resolution  
+- ✅ Visualize trajectories and generate color-coded straightness maps  
+- ✅ Generate movies showing bacterial motion under different conditions  
 
-Y-position – vertical position of the cell in pixels.
+---
 
-To convert the data into physical units, users must provide:
+## 📂 Input Requirements
 
-Microscope resolution: to convert pixel coordinates into micrometers.
+The code requires an **Excel file** with **three columns**:  
 
-Frame rate: to convert frame indices into seconds.
+| Column | Description |
+|--------|-------------|
+| 1      | Frame number (sequential frame index) |
+| 2      | X-position (in pixels) |
+| 3      | Y-position (in pixels) |
 
-Tumble Detection
+**Conversion requirements:**  
+- **Microscope resolution** → convert pixels to micrometers  
+- **Frame rate** → convert frame numbers to seconds  
 
-The algorithm identifies bacterial tumbling events based on criteria described in our paper. These criteria can be adjusted and visually verified to ensure accurate detection for your specific dataset.
+---
 
-Usage
+## 🔍 Tumble Detection
 
-Prepare your trajectory data in the required Excel format.
+- Based on criteria described in our paper  
+- Parameters can be **adjusted** and **visually verified** for each dataset  
+- Ensures accurate detection of bacterial runs and tumbles  
 
-Input your microscope resolution and frame rate in the code.
+---
 
-Run the script to analyze trajectories and extract run and tumble events.
+## 🚀 Usage
 
-Visualize and validate the results to ensure accuracy.
+1. Open MATLAB and navigate to the repository folder  
+2. Load your trajectory Excel file  
+3. Set microscope resolution and frame rate in the code  
+4. Run the main script to analyze trajectories  
+5. Visualize and validate results  
 
-Notes
+---
 
-The code has been tested on trajectories obtained from videos recorded at 40 fps.
+## 🎥 Visualization
 
-Users can modify the tumble detection parameters if the experimental setup or bacterial strain differs.
+The code can generate clear visual outputs:  
 
-Output includes processed trajectories and a summary of run/tumble statistics.
+- **Run trajectories** – displacement and orientation of each bacterium  
+- **Color-coded straightness** – highlights directional motion  
+- **Movies** – animations of bacterial motion under different conditions  
 
-Citation
-    
-If you use this code for your research, please cite:
-Doan et al., “Stabilizing by steering: Enhancing bacterial motility by non-uniform diffusiophoresis,” Supporting Information.
+**Example outputs:**  
+- **Movie S1:** Cells entering a narrow pore under uniform salt concentration  
+- **Movie S2:** Cells entering a narrow pore under a salt gradient  
+- **Movie S3–S6:** Run trajectories under uniform and gradient conditions, experimental and simulated  
+- **Movie S7–S8:** Motion toward a toluene source, with and without diffusiophoretic effects  
+
+---
+
+## 📝 Notes
+
+- Tested with **MATLAB R2020b** or later  
+- Tumble detection parameters can be modified for different experimental setups  
+- Output includes processed trajectories, run/tumble events, and visualizations  
+
+---
+
+## 📌 Citation
+
+If you use this code in your research, please cite our paper:  
+*Doan et al., “Stabilizing by steering: Enhancing bacterial motility by non-uniform diffusiophoresis,” Supporting Information.*
+
+---
+
+## ⚙️ Requirements
+
+- MATLAB R2020b or later  
+- MATLAB toolboxes:  
+  - `Statistics and Machine Learning Toolbox` (optional for advanced analysis)  
+  - `Image Processing Toolbox like Image J` (if working with videos)  
+
