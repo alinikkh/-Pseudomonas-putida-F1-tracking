@@ -7,6 +7,7 @@
 
 This repository contains the **MATLAB code** for analyzing the motility of *Pseudomonas putida* F1 cells. The code detects bacterial **runs and tumbles** from experimental trajectories and enables quantitative analysis of bacterial motion under various experimental conditions.
 ## 📚 Update
+ -  ▶ This repository will be  moved and maintained under the Complex Fluid Lab: https://www.sangwooshin.com/
   - ▶ Python code has been developed and is under test. (Will be added soon)
   - ▶ The New code will give more organized figures
   - ▶ All Fig files will be added to a separate folder
