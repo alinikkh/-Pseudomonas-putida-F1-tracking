@@ -6,6 +6,11 @@
 [![GitHub Repo Size](https://img.shields.io/github/repo-size/yourusername/Pseudomonas-putida-F1-Tracking)](https://github.com/yourusername/Pseudomonas-putida-F1-Tracking)
 
 This repository contains the **MATLAB code** for analyzing the motility of *Pseudomonas putida* F1 cells. The code detects bacterial **runs and tumbles** from experimental trajectories and enables quantitative analysis of bacterial motion under various experimental conditions.
+## 📚 Update
+  ▶ Python code has been developed and is under test. (Will be added soon).
+  ▶ The New code will give more organized figures.
+  ▶ All Fig files will be added to a separate folder.
+
 
 ---
 
