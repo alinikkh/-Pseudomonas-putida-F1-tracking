@@ -1,0 +1,848 @@
+clear all
+close all
+clc
+% data=xlsread('data_track_salt_toluene_grad.xlsx');
+% data=xlsread('data_track.xlsx');
+
+[filename, filepath] = uigetfile('*.xlsx;*.xls', 'Select Excel File');
+
+% Check if the user clicked on Cancel
+if isequal(filename, 0)
+    disp('User canceled the operation.');
+else
+    % If a file is selected, proceed to import data
+    fullpath = fullfile(filepath, filename);
+
+    % Check if it's an XLSX or XLS file
+    [~, ~, fileExt] = fileparts(fullpath);
+    
+    if strcmpi(fileExt, '.xlsx')
+        % For XLSX files, use readtable
+        data1 = readtable(fullpath);
+    elseif strcmpi(fileExt, '.xls')
+        % For XLS files, use xlsread
+        data1 = xlsread(fullpath);
+    else
+        error('Unsupported file format. Please select an Excel file.');
+    end
+
+    % Display the imported data
+    disp('Imported Data:');
+end
+
+% % data=xlsread('data_track_salt_toluene_grad.xlsx');
+% % data=xlsread('data_track.xlsx');
+% data=xlsread('track_2_3.xlsx');
+fps = 40;
+res =1/1.342; %0.7 or 1.342
+window_size = 10; %moving average period
+count_angle = 1;
+count_turn = 0;
+count_reverse = 0;
+time = 0;
+TF=[];
+data = table2array(data1);
+l = length(data(:,1));
+step = 1;
+
+%extract data from raw xlsx
+for ii=2:1:l-1
+     if data(ii,1)-data(ii-1,1) ~= 1 && data(ii+1,1)-data(ii,1)==1 
+        mark1(step)=ii;
+        xstart(step)=data(ii,2);
+        ystart(step)=data(ii,3);
+
+     end  
+    
+      if data(ii,1)-data(ii-1,1) == 1 && data(ii+1,1)-data(ii,1)~=1 
+        mark2(step)=ii;
+        xend(step)=data(ii,2);
+        ysend(step)=data(ii,3);
+        step = step +1 ;
+     end  
+end
+
+vstep = 1;
+stepa1 = 1;
+stepa2 = 1;
+stepa3 = 1;
+stepa4 = 1;
+stepa5 = 1;
+stepa6 = 1;
+stepa7 = 1;
+stepa8 = 1;
+stepa9 = 1;
+stepa10 = 1;
+stepa11 = 1;
+stepa12 = 1;
+stepa13 = 1;
+stepa14 = 1;
+stepa15 = 1;
+stepa16 = 1;
+stepa17 = 1;
+stepa18 = 1;
+stepa19 = 1;
+stepa20 = 1;
+stepr100=1;
+stepr101=1;
+stepr102=1;
+stepr103=1;
+stepr104=1;
+stepr105=1;
+
+stepr1 = 1;
+stepr2 = 1;
+stepr3 = 1;
+stepr4 = 1;
+stepr5 = 1;
+stepr6 = 1;
+stepr7 = 1;
+stepr8 = 1;
+stepr9 = 1;
+stepr10 = 1;
+stepr11 = 1;
+stepr12 = 1;
+stepr13 = 1;
+stepr14 = 1;
+stepr15 = 1;
+stepr16 = 1;
+stepr17 = 1;
+stepr18 = 1;
+stepr19 = 1;
+stepr20 = 1;
+stepr21 = 1;
+stepr22 = 1;
+stepr23 = 1;
+stepr24 = 1;
+stepr100=1;
+stepr101=1;
+stepr102=1;
+stepr103=1;
+stepr104=1;
+stepr105=1;
+
+
+step_fre = 1
+tra = 1;
+step_si = 1;
+step_rp = 1;
+run_length_total = 0;
+run_length_total1 = 0;
+ava_cos_count = 1;
+tumble_happen = 5;
+tumble = 0;
+tracktumble=0;
+TUMBLES(step_fre)=0;
+angular_reorientationT = [];
+all_runs = {};           % Cell array to store each run's trajectory
+all_straightness = [];   % Array to store corresponding straightness
+
+
+for j=1:1:step-1
+    figure(1)
+    if mark2(j)-mark1(j)> 10 %screening for long trajectory in time %main code 10 my criteria is 2
+    a=data(mark1(j),2);
+    b=data(mark2(j),2);
+    c=data(mark1(j),3);
+    d=data(mark2(j),3);
+    if sqrt((b-a)^2+(d-c)^2) > 10 %screening for long trajectory in distance %min code 10 %5 for dual and chemo
+        check = 0;
+        check_1 = 0;
+        for jj = 0:1:(mark2(j)-mark1(j)+1 - 1)
+            dxt = data(mark1(j)+jj+1,2)-data(mark1(j)+jj,2);
+            dyt = data(mark1(j)+jj+1,3)-data(mark1(j)+jj,3);
+            % Calculate velocity vector angles
+            magnitudet = (sqrt((dxt)^2+(dyt^2))/(res))/(1/fps);
+            if magnitudet > 200              %400 for dual and chemo and 200 for control and salt
+             check = check +1;
+            end
+             if magnitudet <0.5             %2 my criteria is 2.7 0.1 for dual and chemo and 0.5 for control and salt
+             check_1 = check_1 +1;
+            end
+        end
+        
+   if check == 0 && check_1 <=100 % No defect trajectory
+        
+        %running everage to have smooth trajectory run and tumble
+        tra = tra +1;
+        time = time + length(data(mark1(j):mark2(j)));
+        plot(data(mark1(j):mark2(j),2),data(mark1(j):mark2(j),3));
+        hold on
+        x_ma = movmean(data(mark1(j):mark2(j),2), window_size);
+        y_ma = movmean(data(mark1(j):mark2(j),3), window_size);
+        %if length(data(mark1(j):mark2(j),2)) < window_size-1
+        %x_ma = sgolayfilt(data(mark1(j):mark2(j),2),2,5);
+        %y_ma = sgolayfilt(data(mark1(j):mark2(j),3),2,5);
+        %else
+        %x_ma = sgolayfilt(data(mark1(j):mark2(j),2),2,window_size-1);
+        %y_ma = sgolayfilt(data(mark1(j):mark2(j),3),2,window_size-1);
+        %end
+        plot(x_ma,y_ma);
+        hold on
+
+        
+        for jj = 0:1:(mark2(j)-mark1(j)+1 - 1)
+            dx = data(mark1(j)+jj+1,2)-data(mark1(j)+jj,2);
+            dy = data(mark1(j)+jj+1,3)-data(mark1(j)+jj,3);
+            % Calculate velocity vector angles
+            magnituded = (sqrt(dx^2+dy^2)/(res))/(1/fps);
+            if magnituded > 1 && magnituded < 200
+            theta(vstep) = atan2(dy, dx);
+            % Convert angles to degrees
+            magnitude(vstep) = magnituded;
+            theta_deg(vstep) = rad2deg(theta(vstep));
+ 
+            vstep = vstep +1;
+            end
+        end % calculate velecity distribution
+        
+        
+        start = 1;
+        count_turn_mark=1;
+        count_st = 1;
+        SUM_angular_displacement = 0;
+        run_distance_1 = 0;
+        run_time_0 = 0;
+clear ZZZ
+clear time_vel
+clear angular_reorientation
+clear angular_speed
+clear significant_drops
+clear angular_reorientationT
+%plotting velocity vs time
+% Initialize variables
+angles = zeros(1, length(x_ma)-1);
+reorientation_time = [];
+time = (1:length(x_ma)-1) / fps;
+total_angular_reorientation = 0;
+threshold_reorientation = 0.5;  % Reorientation threshold (radians)
+threshold_velocity = 2;      % Velocity threshold
+angular_reorientationT = [];
+
+for jj=1:1:length(x_ma)-1
+    dxx1 = x_ma(jj+1) - x_ma(jj);
+    dyy1 = y_ma(jj+1) - y_ma(jj);
+    vel(jj) = (sqrt(dxx1^2+dyy1^2)/(res))/(1/fps);
+    time_vel(jj) = jj/fps;
+
+    if jj > 1
+        % Calculate angle at point jj and jj-1
+        angle1 = atan2(y_ma(jj) - y_ma(jj-1), x_ma(jj) - x_ma(jj-1));  % Angle at jj-1
+        angle2 = atan2(y_ma(jj+1) - y_ma(jj), x_ma(jj+1) - x_ma(jj));  % Angle at jj
+
+        % Calculate change in angle (angular displacement)
+        delta_angle = angle2 - angle1;
+
+        % Make sure the change in angle is within [-pi, pi]
+        delta_angle = mod(delta_angle + pi, 2*pi) - pi;
+        angular_reorientation_values = abs(delta_angle);
+        angular_reorientationT = [angular_reorientationT; angular_reorientation_values];
+        % Angular speed: change in angle per time (rad/s)
+        angular_speed(jj) = delta_angle / (1 / fps);
+    else
+        angular_speed(jj) = 0;  % No angular speed for the first point
+    end
+end
+GGG=movmean(angular_reorientationT,5);
+ZZZ=movmean(vel,5);  % Smooth the velocity
+run_time_new=0;
+
+velocity=ZZZ;
+time_1=time_vel;
+
+% Step 1: Identify all local minima in velocity
+[local_minima, min_idx] = findpeaks(-velocity);  % Negative sign to detect minima
+local_minima = -local_minima;  % Revert back to positive values
+
+% Step 2: Find adjacent maxima for each minimum
+significant_drops = [];
+for iii = 1:length(min_idx)
+    m_idx = min_idx(iii);  % Index of the current minimum (local minimum)
+    v_m = velocity(m_idx);  % Velocity at the minimum
+    t1_idx = NaN;
+    t2_idx = NaN;
+    % Find the adjacent maxima (ensure we don't go out of bounds)
+    if m_idx > 4
+        % Previous maximum
+       [v_t1, t1_idx] = max(velocity(m_idx-4:m_idx-1));
+    else
+        v_t1 = NaN;  % No valid previous maximum
+    end
+
+    if m_idx < length(velocity)-4
+        % Next maximum
+       [v_t2, t2_idx] = max(velocity(m_idx+1:m_idx+4));
+       t2_idx = t2_idx + m_idx;  % Adjust index for the second half
+    else
+        v_t2 = NaN;  % No valid next maximum
+    end
+
+    % Step 3: Calculate the depth of the minimum
+    if ~isnan(v_t1) && ~isnan(v_t2)
+        delta_v = max(v_t1 - v_m, v_t2 - v_m);
+    elseif ~isnan(v_t1)
+        delta_v = v_t1 - v_m;
+    elseif ~isnan(v_t2)
+        delta_v = v_t2 - v_m;
+    else
+        delta_v = 0;  % No valid maxima found
+    end
+
+
+
+    % Calculate total angular reorientation between the two adjacent maxima
+    % Calculate angular reorientation between t1 (before) and t2 (after)
+if ~isnan(t1_idx)
+    angle1 = atan2(y_ma(t1_idx) - y_ma(m_idx), x_ma(t1_idx) - x_ma(m_idx));  % Angle at t1 (previous maximum)
+else
+    angle1 = NaN;  % No valid previous maximum
+end
+
+if ~isnan(t2_idx)
+    angle2 = atan2(y_ma(t2_idx) - y_ma(m_idx), x_ma(t2_idx) - x_ma(m_idx));  % Angle at t2 (next maximum)
+else
+    angle2 = NaN;  % No valid next maximum
+end
+
+% Angular reorientation (difference in angles) if both angles exist
+if ~isnan(angle1) && ~isnan(angle2)
+    angular_reorientation = abs(angle2 - angle1);
+    angular_reorientation = mod(angular_reorientation + pi, 2*pi) - pi;  % Normalize to [-pi, pi]
+    angular_reorientation = abs(angular_reorientation);  % Take the absolute value
+else
+    angular_reorientation = 0;  % No valid angular reorientation if either angle is missing
+end
+% Store angular reorientation value
+
+
+    % Step 4: Check if the drop is significant (velocity or angular reorientation)
+    if (delta_v / v_m > threshold_velocity) && (angular_reorientation > threshold_reorientation)
+        significant_drops = [significant_drops; m_idx];  % Store index of significant drop
+    end
+end
+
+if ~isempty(significant_drops)
+    filtered_drops = significant_drops(1);  % Initialize with the first significant drop
+
+    for i = 2:length(significant_drops)
+        prev_drop = filtered_drops(end);  % Get the last added significant drop
+        curr_drop = significant_drops(i);  % Current significant drop being checked
+
+        % Check if the difference between current and previous drops is less than 5
+        if abs(curr_drop - prev_drop) < 5
+            % If the current drop has a lower velocity, replace the previous drop
+            if velocity(curr_drop) < velocity(prev_drop)
+                filtered_drops(end) = curr_drop;
+            end
+        else
+            % If the difference is greater than or equal to 5, add the current drop
+            filtered_drops = [filtered_drops; curr_drop];
+        end
+    end
+else
+    filtered_drops = significant_drops;
+end
+
+if ~isempty(filtered_drops)
+    significant_drops = filtered_drops;
+end
+ 
+       significant_drops=[[significant_drops];length(x_ma)];
+       significant_drops=significant_drops';
+
+       TumbleCount=length(significant_drops)-1;
+       total_time = length(x_ma)/fps;
+
+       TumbleFre=TumbleCount/total_time;
+       TF=[TF,TumbleFre];
+jj_start = 1;
+
+Cheking=1;
+
+for kk=1:1:length(significant_drops)
+    K=significant_drops(kk);
+    for jj=jj_start:1:length(x_ma)
+    if jj == 1
+            x_begin = data(mark1(j),2);
+            y_begin = data(mark1(j),3);   
+            x_end = data(mark1(j)+length(x_ma),2);
+            y_end = data(mark1(j)+length(x_ma),3);
+    end
+    dxxx1 = data(mark1(j)+jj,2)-data(mark1(j)+jj-1,2);
+    dyyy1 = data(mark1(j)+jj,3)-data(mark1(j)+jj-1,3);
+    run_distance_1 = run_distance_1 + sqrt(dxxx1^2+dyyy1^2); %running distance end-to-end
+    run_time_0 = run_time_0  + 1/fps;
+
+if  jj==K
+     running_time_overal(tumble+1) = run_time_0-run_time_new;
+     if kk ~= length(significant_drops)
+   %scatter(x_ma(jj+2), y_ma(jj+2), 'r', 'filled');
+   %hold on;
+end
+     tumble_happen = 0;
+    x_turn_mark = data(mark1(j)+jj,2);
+    y_turn_mark = data(mark1(j)+jj,3);
+    dx_run = x_turn_mark - x_begin;
+    dy_run = y_turn_mark - y_begin;
+    run_distance_2 = sqrt(dx_run^2 + dy_run^2);
+    run_angle = rad2deg(atan2(dy_run, dx_run)); 
+    straightness_index = run_distance_2/run_distance_1;
+     Tunlength_overall(tumble+1)=run_distance_2;  
+            if straightness_index <=1 
+            straightness_index_s(step_si) = straightness_index;
+            run_speed_s(step_si) = (run_distance_2/(res))/(run_time_0-run_time_new);
+            step_si = step_si + 1;
+            if run_angle>= -180 && run_angle< -160
+                run_d1(stepr1)= straightness_index;
+                run_time_1(stepr1) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr1 = stepr1+1;
+            end
+            if run_angle>= -160 && run_angle< -140
+                run_d2(stepr2)=straightness_index;
+                run_time_2(stepr2) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr2 = stepr2+1;
+            end
+            if run_angle>= -140 && run_angle< -120
+                run_d3(stepr3)= straightness_index;
+                run_time_3(stepr3) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr3 = stepr3+1;
+            end
+            
+            if run_angle>= -120 && run_angle< -100
+                run_d4(stepr4)= straightness_index;
+                run_time_4(stepr4) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr4 = stepr4+1;
+            end
+            
+            if run_angle>= -100 && run_angle< -80
+                run_d5(stepr5)= straightness_index;
+                run_time_5(stepr5) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr5 = stepr5+1;
+            end
+             
+            if run_angle>= -80 && run_angle< -60
+                run_d6(stepr6)= straightness_index;
+                run_time_6(stepr6) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr6 = stepr6+1;
+            end
+             
+            if run_angle>= -60 && run_angle< -40
+                run_d7(stepr7)= straightness_index;
+                run_time_7(stepr7) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr7 = stepr7+1;
+            end
+             
+            if run_angle>= -40 && run_angle< -20
+                run_d8(stepr8)= straightness_index;
+                run_time_8(stepr8) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr8 = stepr8+1;
+            end
+             
+            if run_angle>= -20 && run_angle< 0
+                run_d9(stepr9)= straightness_index;
+                run_time_9(stepr9) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr9 = stepr9+1;
+            end
+               
+            if run_angle>= 0 &&run_angle< 20
+                run_d10(stepr10)= straightness_index;
+                run_time_10(stepr10) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr10 = stepr10+1;
+            end
+                 
+            if run_angle>= 20 && run_angle< 40
+                run_d11(stepr11)= straightness_index;
+                run_time_11(stepr11) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr11 = stepr11+1;
+            end
+                 
+            if run_angle>= 40 && run_angle< 60
+                run_d12(stepr12)= straightness_index;
+                run_time_12(stepr12) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr12 = stepr12+1;
+            end
+             if run_angle>= 60 && run_angle< 80
+                run_d13(stepr13)= straightness_index;
+                run_time_13(stepr13) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr13 = stepr13+1;
+             end
+            
+             if run_angle>= 80 && run_angle< 100
+                run_d14(stepr14)= straightness_index;
+                run_time_14(stepr14) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr14 = stepr14+1;
+             end
+             if run_angle>= 100 && run_angle< 120
+                run_d15(stepr15)= straightness_index;
+                run_time_15(stepr15) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr15 = stepr15+1;
+             end
+             if run_angle>= 120 && run_angle< 140
+                run_d16(stepr16)= straightness_index;
+                run_time_16(stepr16) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr16 = stepr16+1;
+             end
+             if run_angle>= 140 && run_angle< 160
+                run_d17(stepr17)= straightness_index;
+                run_time_17(stepr17) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr17 = stepr17+1;
+             end
+             if run_angle>= 160 && run_angle< 180
+                run_d18(stepr18)= straightness_index;
+                run_time_18(stepr18) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr18 = stepr18+1;
+             end
+ if run_angle>= -15 && run_angle< 0
+                run_d100(stepr100)= straightness_index;
+                run_time_100(stepr100) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr100 = stepr100+1;
+             end
+ if run_angle>= 0 && run_angle<= 15
+                run_d101(stepr101)= straightness_index;
+                run_time_101(stepr101) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr101 = stepr101+1;
+             end
+if run_angle>= 75 && run_angle< 105
+                run_d102(stepr102)= straightness_index;
+                run_time_102(stepr102) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr102 = stepr102+1;
+             end
+if run_angle>= 165 && run_angle< 180
+                run_d103(stepr103)= straightness_index;
+                run_time_103(stepr103) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr103 = stepr103+1;
+             end
+if run_angle>= -180 && run_angle< -165
+                run_d104(stepr104)= straightness_index;
+                run_time_104(stepr104) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr104 = stepr104+1;
+             end
+if run_angle>= -105 && run_angle< -75
+                run_d105(stepr105)= straightness_index;
+                run_time_105(stepr105) = (run_distance_2/(res))/(run_time_0-run_time_new);
+                stepr105 = stepr105+1;
+             end
+
+            end
+
+% Store the current run
+run_indices = (mark1(j)+jj_start-1):(mark1(j)+jj);
+x_run = data(run_indices,2);
+y_run = data(run_indices,3);
+
+% Shift the trajectory to origin
+x_run_shifted = x_run - x_run(1);
+y_run_shifted = y_run - y_run(1);
+
+% Store shifted run and its straightness
+all_runs{end+1} = [x_run_shifted, y_run_shifted];
+all_straightness(end+1) = straightness_index;
+
+           run_time_new=run_time_0;
+           run_distance_1=0;
+           x_begin=x_turn_mark;
+           y_begin=y_turn_mark;
+           tumble = tumble + 1;
+          jj_start = jj + 1;
+            break;
+end
+
+    end
+
+end
+
+                 run_distance_1 = 0;
+                run_distance_2 = 0;
+                run_time_0 = 0;
+if exist('x_turn_mark', 'var') && exist('y_turn_mark', 'var')
+    x_begin = x_turn_mark;
+    y_begin = y_turn_mark;
+else
+    x_begin = 0;
+    y_begin = 0;
+end
+
+
+
+        clear x_ma;
+        clear y_ma;
+        clear vel
+        clear time_vel
+
+        start = 1;
+
+   end
+    end
+    end
+end
+
+figure(2)
+histogram(theta_deg,20);
+h.DisplayStyle = 'stairs';
+figure(3)
+polarplot(theta_deg,magnitude,'-o','LineStyle', 'none','MarkerSize',0.5 )
+hold on
+figure(4)
+numBins = 18;
+polarhistogram(theta, 'NumBins', numBins,'Normalization', 'probability');
+
+figure(8)
+steprv = 1;
+magrv(steprv)=mean(run_d1);
+steprv = steprv +1 ;
+magrv(steprv)=mean(run_d2);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d3);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d4);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d5);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d6);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d7);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d8);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d9);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d10);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d11);
+steprv = steprv +1;
+magrv(steprv)=mean(run_d12);
+
+angle_step = 1;
+for i=-180:1:180
+    angled(angle_step) = (i/180)*pi;
+    if i>= -180 && i<=-160
+    magrvv(angle_step) = mean(run_d1);
+    end
+    if i> -160 && i<=-140
+    magrvv(angle_step) = mean(run_d2);
+    end
+    if i> -140 && i<=-120
+    magrvv(angle_step) = mean(run_d3);
+    end
+    if i> -120 && i<=-100
+    magrvv(angle_step) = mean(run_d4);
+    end
+    if i> -100 && i<=-80
+    magrvv(angle_step) = mean(run_d5);
+    end
+    if i> -80 && i<=-60
+    magrvv(angle_step) = mean(run_d6);
+    end
+    if i> -60 && i<=-40
+    magrvv(angle_step) = mean(run_d7);
+    end
+    if i> -40 && i<=-20
+    magrvv(angle_step) = mean(run_d8);
+    end
+    if i> -20 && i<=0
+    magrvv(angle_step) = mean(run_d9);
+    end
+    if i> 0 && i<=20
+    magrvv(angle_step) = mean(run_d10);
+    end
+    if i> 20 && i<=40
+    magrvv(angle_step) = mean(run_d11);
+    end
+    if i> 40 && i<=60
+    magrvv(angle_step) = mean(run_d12);
+    end
+    if i> 60 && i<=80
+    magrvv(angle_step) = mean(run_d13);
+    end
+    if i> 80 && i<=100
+    magrvv(angle_step) = mean(run_d14);
+    end
+    if i> 100 && i<=120
+    magrvv(angle_step) = mean(run_d15);
+    end
+    if i> 120 && i<=140
+    magrvv(angle_step) = mean(run_d16);
+    end
+    if i> 140 && i<=160
+    magrvv(angle_step) = mean(run_d17);
+    end
+    if i> 160 && i<=180
+    magrvv(angle_step) = mean(run_d18);
+    end
+    angle_step = angle_step + 1;
+end
+angled(angle_step) = pi;
+magrvv(angle_step) = magrvv(1);
+polarplot(angled,magrvv,'LineWidth', 2);
+ax = gca;
+ax.FontSize = 18;
+
+figure(9)
+
+angle_step = 1;
+for i=-180:1:180
+    angled(angle_step) = (i/180)*pi;
+    if i>= -180 && i<=-160
+    magrtt(angle_step) = mean(run_time_1);
+    end
+    if i> -160 && i<=-140
+    magrtt(angle_step) = mean(run_time_2);
+    end
+    if i> -140 && i<=-120
+    magrtt(angle_step) = mean(run_time_3);
+    end
+    if i> -120 && i<=-100
+    magrtt(angle_step) = mean(run_time_4);
+    end
+    if i> -100 && i<=-80
+    magrtt(angle_step) = mean(run_time_5);
+    end
+    if i> -80 && i<=-60
+    magrtt(angle_step) = mean(run_time_6);
+    end
+    if i> -60 && i<=-40
+    magrtt(angle_step) = mean(run_time_7);
+    end
+    if i> -40 && i<=-20
+    magrtt(angle_step) = mean(run_time_8);
+    end
+    if i> -20 && i<=0
+    magrtt(angle_step) = mean(run_time_9);
+    end
+    if i> 0 && i<=20
+    magrtt(angle_step) = mean(run_time_10);
+    end
+    if i> 20 && i<=40
+    magrtt(angle_step) = mean(run_time_11);
+    end
+    if i> 40 && i<=60
+    magrtt(angle_step) = mean(run_time_12);
+    end
+    if i> 60 && i<=80
+    magrtt(angle_step) = mean(run_time_13);
+    end
+    if i> 80 && i<=100
+    magrtt(angle_step) = mean(run_time_14);
+    end
+    if i> 100 && i<=120
+    magrtt(angle_step) = mean(run_time_15);
+    end
+    if i> 120 && i<=140
+    magrtt(angle_step) = mean(run_time_16);
+    end
+    if i> 140 && i<=160
+    magrtt(angle_step) = mean(run_time_17);
+    end
+    if i> 160 && i<=180
+    magrtt(angle_step) = mean(run_time_18);
+    end
+    angle_step = angle_step + 1;
+end
+angled(angle_step) = pi;
+magrtt(angle_step) = magrtt(1);
+polarplot(angled,magrtt,'LineWidth', 2);
+ax = gca;
+ax.FontSize = 18;
+
+figure(10);
+
+% Calculate the edges of the bins
+binEdges = min(running_time_overal):0.5:max(running_time_overal);
+
+% Create the histogram with specified bin edges
+h = histogram(running_time_overal, 'BinEdges', binEdges, 'Normalization', 'probability');
+
+% Add axis labels
+xlabel('Run time (s)', 'FontSize', 18);
+ylabel('Probability', 'FontSize', 18);
+
+% Set x-axis and y-axis limits
+xlim([0 8]);
+ylim([0 0.5]);
+
+% Set font size for the axes
+set(gca, 'FontSize', 18);
+
+% Set the box aspect ratio and thickness
+set(gca, 'PlotBoxAspectRatio', [1 1 1], 'LineWidth', 1.5);
+
+% Optionally, you can add a title to the histogram
+title('Histogram of Run time', 'FontSize', 18);
+
+figure(11);
+
+% Calculate the edges of the bins
+binEdges = min(Tunlength_overall):4:max(Tunlength_overall);
+
+% Create the histogram with specified bin edges
+h = histogram(Tunlength_overall, 'BinEdges', binEdges, 'Normalization', 'probability');
+
+% Add axis labels
+xlabel('Run length ({\itum})', 'FontSize', 18);
+ylabel('Probability', 'FontSize', 18);
+
+% Set x-axis and y-axis limits
+xlim([0 20]);
+ylim([0 0.8]);
+
+% Set font size for the axes
+set(gca, 'FontSize', 18);
+
+% Set the box aspect ratio and thickness
+set(gca, 'PlotBoxAspectRatio', [1 1 1], 'LineWidth', 1.5);
+
+% Optionally, you can add a title to the histogram
+title('Histogram of Run length', 'FontSize', 18);
+
+%mean(tumble_frequency)
+disp('run length')
+mean(Tunlength_overall)
+%mean(Tunlength_overall(Tunlength_overall ~= 0))
+%back to line 694,695 and remove comment (tumble and ttime)
+%b=mean(tumble_frequency);
+a= mean(straightness_index_s);
+fprintf('Mean St: %3.3f\n', a);
+%fprintf('Mean tumble: %3.3f\n', b);
+
+%{
+% Remove invalid indices from significant_drops
+valid_drops = significant_drops(significant_drops <= length(time_1));
+
+% Figure setup for both velocity and angular reorientation
+figure(19);
+
+% First subplot for velocity
+subplot(2, 1, 1);
+plot(time_1, velocity, '-o', 'DisplayName', 'Velocity');
+hold on;
+% Plot only the valid significant drops
+plot(time_1(valid_drops), velocity(valid_drops), 'rx', 'MarkerSize', 10, 'LineWidth', 2, 'DisplayName', 'Significant Drops');
+legend('show');
+xlabel('Time (s)');
+ylabel('Velocity');
+title('Significant Speed Drops');
+hold off;
+
+% Second subplot for angular reorientation
+subplot(2, 1, 2);
+plot(time_1(2:end), angular_reorientationT, '-b', 'DisplayName', 'Angular Reorientation');
+hold on;
+% Highlight significant reorientation drops (above threshold of 0.5 radians)
+significant_reorientation = find(angular_reorientationT > 1);
+% Ensure valid indices for time_1
+valid_reorientation = significant_reorientation(significant_reorientation < length(time_1));  % Ensure valid indices
+plot(time_1(valid_reorientation + 1), angular_reorientationT(valid_reorientation), 'ro', 'MarkerSize', 10, 'LineWidth', 2, 'DisplayName', 'Significant Reorientations');
+legend('show');
+xlabel('Time (s)');
+ylabel('Angular Reorientation (rad)');
+title('Significant Angular Reorientations');
+hold off;
+
+%}
+
+ runspeed_90=[run_time_105,run_time_102];
+ st_90=[run_d102,run_d105];
+ runspeed_0=[run_time_100,run_time_101];
+ st_0=[run_d100,run_d101];
+ runspeed_180=[run_time_103,run_time_104];
+ st_180=[run_d103,run_d104];
